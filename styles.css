@@ -2,6 +2,7 @@
     --font-mono: "Space Mono", "SF Mono", "Fira Code", Consolas, monospace;
     --font-sans: "Space Grotesk", -apple-system, BlinkMacSystemFont, sans-serif;
     --bg: #0d0e0f;
+    --lightBg: #eff1f3;
     --surface: #141516;
     --surface2: #1a1b1d;
     --border: #242526;
@@ -12,6 +13,7 @@
     --text-muted: #5a5c60;
     --danger: #ff4f5e;
     --star-color: #f5e642;
+    
 }
 
 * {
@@ -191,7 +193,7 @@ body{
 /* Panels */
 .panel{ 
     display: none; 
-    padding: 14px 16px; 
+    padding: 20px 15px; 
     border-bottom: 1px solid var(--border);
 
     position: relative;
@@ -219,16 +221,20 @@ body{
     content: '*';
     position: absolute;
     right: 10px;
-    font-size: 150px;
+    font-size: 155px;
     color: var(--accent);
     opacity: 0.50;
+    display: inline-block;
+    transform-origin: center;
 
     transform: rotate(45deg); 
-    margin-top: -25px;
-    top: -12px;
+    margin-top: 10px;
+    right: 10px;    
+    line-height: 0.2;
+
     z-index: 1;
-    
 }
+
 
 .section-header{
     display: flex;
@@ -258,7 +264,7 @@ body{
 .first-section{
     background-size:cover;
     background-position:center;
-    background-color: #e6e8ec;
+    background-color: var(--lightBg);
     color: var(--text-muted);
     padding-top: 20px;
     
@@ -425,3 +431,41 @@ body{
     font-family: var(--font-mono);
 }
 
+/* Footer */
+.footer{
+    padding: 10px 16px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.status-dot{
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+}
+
+.dot{
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--text);
+}
+
+.dot.active{
+    background: var(--accent);
+    box-shadow: 0 0 6px var(--accent);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse{
+    0%, 100%{
+        opacity: 1;
+    }
+    50%{
+        opacity: 0.5;
+    }
+}
