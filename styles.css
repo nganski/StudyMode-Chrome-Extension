@@ -111,3 +111,146 @@ body{
 }
 
 /* TABS */
+.tabs{
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    padding: 0 4px;
+}
+
+.tab{
+    flex: 1;
+    padding: 10px 4px;
+    text-align: center;
+    font-size: 10px;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    border: none;
+    background: none;
+    outline: none;
+}
+
+.tab.active{
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+}
+
+.tab:hover:not(.active){
+    color: var(--text); 
+}
+
+.panel{ 
+    display: none; padding: 14px 16px; 
+}
+.panel.active{
+    display: block;
+}
+
+/* Section */
+.section{
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+}
+
+.section-header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.section-title{
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+}
+
+/* Feature rows */
+.feature-row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.feature-row:last-child{
+    border-bottom: none; 
+    padding-bottom: 0; 
+}
+.feature-row:first-child{ 
+    padding-top: 0; 
+}
+
+.feature-info{ 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+}
+
+.feature-icon{
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.feature-label{ 
+    font-size: 12px; 
+    font-weight: 500; 
+}
+.feature-sub{ 
+    font-size: 10px; 
+    color: var(--text-muted); 
+    margin-top: 1px; 
+}
+
+/* Mini toggle */
+.mini-toggle{
+    width: 32px;
+    height: 18px;
+    background: var(--border);
+    border-radius: 9px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+    border: none;
+    outline: none;
+    flex-shrink: 0;
+}
+
+.mini-toggle.on{ 
+    background: var(--accent); 
+}
+
+.mini-toggle::after{
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-radius: 50%;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.2s;
+}
+
+.mini-toggle.on::after{
+    transform: translateX(14px); 
+}
+
+
