@@ -11,6 +11,7 @@
 -->
 
 <body>
+
     <div class="header">
         <div class="logo">
             <div class="logo-icon"><img src="images/icon16.png" alt=""></div>
@@ -34,89 +35,99 @@
     <!-- focus tab -->
     <div class="panel active" id="tab-focus">
 
-    <div class="section">
-      <div class="section-title" style="margin-bottom:10px;">Distraction Blocking</div>
+      <div class="section first-section">
+        <div class="section-title" style="margin-bottom:10px;">Distraction Blocking</div>
 
-      <!-- socials -->
-      <div class="feature-row">
-        <div class="feature-info">
-          <div class="feature-icon ic-block">🚫</div>
-          <div>
-            <div class="feature-label">Social Media</div>
-            <div class="feature-sub">Instagram, TikTok, Twitter, Reddit, Pintrest</div>
+        <!-- socials -->
+        <div class="feature-row">
+          <div class="feature-info">
+            <div class="feature-icon ic-block">🚫</div>
+            <div>
+              <div class="feature-label">Social Media</div>
+              <div class="feature-sub">Instagram, TikTok, Twitter, Reddit, Pintrest</div>
+            </div>
           </div>
+          <button class="mini-toggle on" id="toggle-social" data-key="blockSocial"></button>
         </div>
-        <button class="mini-toggle on" id="toggle-social" data-key="blockSocial"></button>
-      </div>
 
-      <!-- youtube -->
-      <div class="feature-row">
-        <div class="feature-info">
-          <div class="feature-icon ic-block">📱</div>
-          <div>
-            <div class="feature-label">YouTube Distractions</div>
-            <div class="feature-sub">Shorts, recommendations, comments</div>
+        <!-- youtube -->
+        <div class="feature-row">
+          <div class="feature-info">
+            <div class="feature-icon ic-block">📱</div>
+            <div>
+              <div class="feature-label">YouTube Distractions</div>
+              <div class="feature-sub">Shorts, recommendations, comments</div>
+            </div>
           </div>
+          <button class="mini-toggle" id="toggle-yt" data-key="blockYouTube"></button>
         </div>
-        <button class="mini-toggle" id="toggle-yt" data-key="blockYouTube"></button>
-      </div>
 
-      <!-- entertainments -->
-      <div class="feature-row">
-        <div class="feature-info">
-          <div class="feature-icon ic-block">🎮</div>
-          <div>
-            <div class="feature-label">Gaming & Entertainment</div>
-            <div class="feature-sub">Twitch, Netflix, Discord</div>
+        <!-- entertainments -->
+        <div class="feature-row">
+          <div class="feature-info">
+            <div class="feature-icon ic-block">🎮</div>
+            <div>
+              <div class="feature-label">Gaming & Entertainment</div>
+              <div class="feature-sub">Twitch, Netflix, Hulu, Discord </div>
+            </div>
           </div>
+          <button class="mini-toggle" id="toggle-gaming" data-key="blockGaming"></button>
         </div>
-        <button class="mini-toggle" id="toggle-gaming" data-key="blockGaming"></button>
+
+        <div class="blocked-list" id="blockedSitesList"></div>
       </div>
 
-      <div class="blocked-list" id="blockedSitesList"></div>
-    </div>
-
-    <!-- Custom blocking sites section -->
-    <div class="section">
-      <div class="section-title" style="margin-bottom:10px;">Add Custom Block</div>
-      <div class="custom-block">
-        <input class="custom-input" id="customSiteInput" placeholder="e.g. reddit.com" type="text">
-        <button class="btn-small" id="addCustomSite">+ ADD</button>
+      <!-- Custom blocking sites section -->
+      <div class="section">
+        <div class="section-title" style="margin-bottom:10px;">Add Custom Block</div>
+        <div class="custom-block">
+          <input class="custom-input" id="customSiteInput" placeholder="e.g. reddit.com" type="text">
+          <button class="btn-small" id="addCustomSite">+ ADD</button>
+        </div>
+        <div class="blocked-list" id="customSitesList"></div>
       </div>
-      <div class="blocked-list" id="customSitesList"></div>
-    </div>
 
-    
-    <!-- Footer section of the focus tab -->
-    <div class="section">
+      
+      <!-- Footer section of the focus tab -->
+      <div class="section">
 
-    <!-- Dark Mode row -->
-      <div class="feature-row">
-        <div class="feature-info">
-          <div class="feature-icon ic-dark">🌙</div>
-          <div>
-            <div class="feature-label">Dark Mode Everywhere</div>
-            <div class="feature-sub">Force dark on all websites</div>
+        <!-- Dark Mode row -->
+        <div class="feature-row">
+          <div class="feature-info">
+            <div class="feature-icon ic-dark">🌙</div>
+            <div>
+              <div class="feature-label">Dark Mode Everywhere</div>
+              <div class="feature-sub">Force dark on all websites</div>
+            </div>
           </div>
+          <button class="mini-toggle" id="toggle-dark" data-key="darkMode"></button>
         </div>
-        <button class="mini-toggle" id="toggle-dark" data-key="darkMode"></button>
-      </div>
 
-    <!-- Ad Blocking row -->
-      <div class="feature-row">
-        <div class="feature-info">
-          <div class="feature-icon ic-ads">🛡️</div>
-          <div>
-            <div class="feature-label">Ad Blocker</div>
-            <div class="feature-sub">Block ads & trackers</div>
+        <!-- Ad Blocking row -->
+        <div class="feature-row">
+          <div class="feature-info">
+            <div class="feature-icon ic-ads">🛡️</div>
+            <div>
+              <div class="feature-label">Ad Blocker</div>
+              <div class="feature-sub">Block ads & trackers</div>
+            </div>
           </div>
+          <button class="mini-toggle on" id="toggle-ads" data-key="adBlock"></button>
         </div>
-        <button class="mini-toggle on" id="toggle-ads" data-key="adBlock"></button>
+
       </div>
-    </div>
 
   </div>
 
+    
+  <div class="footer">
+    <div class="status-dot">
+      <div class="dot" id="statusDot"></div>
+      <span id="statusText">StudyMode OFF</span>
+    </div>
+    <div style="font-size:9px; color:var(--text-muted); font-family:var(--font-mono);">v1.0</div>
+  </div>
 
+  <script src="popup.js"></script>
 </body>
 </html>
