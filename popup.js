@@ -17,10 +17,29 @@ let timerEndTime = null;    // ms timestamp when timer will end
 let timerTotalSeconds = 1500;
 
 document.addEventListener('DOMContentLoaded', async() => {
-    const stored = await chrome.storage.local.get('studymodeSettings');
-    if (stored.studymodeSettings){
-        settings = { ...DEFAULT_SETTINGS, ...stored.studymodeSettings };
-    }
+  const stored = await chrome.storage.local.get('studymodeSettings');
+  if (stored.studymodeSettings) {
+    settings = { ...DEFAULT_SETTINGS, ...stored.studymodeSettings };
+    settings.stats = { ...DEFAULT_SETTINGS.stats, ...(stored.studymodeSettings.stats || {}) };
+  }
+
+  currentSound = settings.selectedSound || null;
+  isPlaying = settings.audioPlaying || false;
+
+  // Restore timer state from storage
+  const ts = settings.timerState || {};
+  timerTotalSeconds = ts.totalSeconds || (settings.timerMinutes * 60) || 1500;
+  if (ts.running && ts.endTime && ts.endTime > Date.now()) {
+    timerEndTime = ts.endTime;
+    timerRunning = true;
+  } else {
+    timerEndTime = null;
+    timerRunning = false;
+    // If it finished while popup was closed, endTime may be stale — leave at 0
+  }
+  sessionsCompleted = settings.stats?.sessionsCompleted || 0;
+
+
 
     initUI();
     initTabs();
