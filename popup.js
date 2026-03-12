@@ -5,10 +5,16 @@ const DEFAULT_SETTINGS = {
     blockGaming: false,
     darkMode: true,
     adBlock: true,
-    customerSites: []
-}
+    customerSites: [],
+    timerMinutes: 25,
+    timerMode: 'pomodoro'
+};
 
 let settings = { ...DEFAULT_SETTINGS };
+let timerInterval = null;   // updates display every second
+let timerRunning = false;
+let timerEndTime = null;    // ms timestamp when timer will end
+let timerTotalSeconds = 1500;
 
 document.addEventListener('DOMContentLoaded', async() => {
     const stored = await chrome.storage.local.get('studymodeSettings');
@@ -19,10 +25,39 @@ document.addEventListener('DOMContentLoaded', async() => {
     initUI();
     initTabs();
     initBlocker();
+    initTimer();
 
-    renderTimerDisplay(totalSeconds);
-    startTimer();
-})
+    // Sync audio state from offscreen
+    chrome.runtime.sendMessage({ type: 'GET_AUDIO_STATE' });
+
+    // Listen for background messages — registered here so DOM is guaranteed ready
+    chrome.runtime.onMessage.addListener((msg) => {
+      if (msg.type === 'AUDIO_STATE_UPDATE') {
+        isPlaying = msg.isPlaying;
+        currentSound = msg.currentSound;
+        syncMusicUI();
+      }
+      if (msg.type === 'TIMER_DONE') {
+        timerRunning = false;
+        timerEndTime = null;
+        stopUITick();
+        const startBtn = document.getElementById('timerStart');
+        if (startBtn) startBtn.textContent = '▶ START';
+        renderTimerDisplay(0, timerTotalSeconds);
+        // Small delay to ensure background has finished writing stats to storage
+        setTimeout(() => {
+          chrome.storage.local.get('studymodeSettings', (data) => {
+            if (data.studymodeSettings) {
+              settings = { ...settings, stats: data.studymodeSettings.stats };
+            }
+            sessionsCompleted = settings.stats?.sessionsCompleted || 0;
+            updateSessionDots();
+            updateStatsUI();
+          });
+        }, 200);
+      }
+    });
+});
 
 
 function saveSettings(){
@@ -137,3 +172,135 @@ function initBlocker() {
 }
 
 // Timer tab
+function initTimer(){
+  // mode buttons
+  document.querySelectorAll('.timer-mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (timerRunning) return;
+      document.querySelectorAll('.timer-mode-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      settings.timerMode = btn.dataset.mode;
+      const mins = parseInt(btn.dataset.minutes);
+      settings.timerMinutes = mins;
+      timerTotalSeconds = mins * 60;
+      settings.timerState = { running: false, endTime: null, totalSeconds: timerTotalSeconds };
+      document.getElementById('timerModeLabel').textContent = btn.dataset.mode.toUpperCase();
+      document.getElementById('customMinutes').value = mins;
+      renderTimerDisplay(timerTotalSeconds, timerTotalSeconds);
+      saveSettings();
+    })
+  })
+
+  document.getElementById('timerStart').addEventListener('click', toggleTimer);
+  document.getElementById('timerReset').addEventListener('click', resetTimer);
+
+  document.getElementById('setCustomTimer').addEventListener('click', () => {
+    if (timerRunning) return;
+    const mins = Math.min(Math.max(parseInt(document.getElementById('customMinutes').value) || 25, 1), 120);
+    settings.timerMinutes = mins;
+    timerTotalSeconds = mins * 60;
+    settings.timerState = { running: false, endTime: null, totalSeconds: timerTotalSeconds };
+    renderTimerDisplay(timerTotalSeconds, timerTotalSeconds);
+    saveSettings();
+  });
+
+  // ── Restore persisted mode selection ──
+  const savedMode = settings.timerMode || 'pomodoro';
+  document.querySelectorAll('.timer-mode-btn').forEach(btn => {
+    const isActive = btn.dataset.mode === savedMode;
+    btn.classList.toggle('active', isActive);
+  });
+  const modeLabel = document.getElementById('timerModeLabel');
+  if (modeLabel) modeLabel.textContent = savedMode.toUpperCase();
+
+  // ── Restore display from persisted state ──
+  const remaining = timerRunning ? Math.max(0, Math.round((timerEndTime - Date.now()) / 1000)) : timerTotalSeconds;
+  renderTimerDisplay(remaining, timerTotalSeconds);
+  document.getElementById('timerStart').textContent = timerRunning ? '⏸ PAUSE' : '▶ START';
+  updateSessionDots();
+
+  if (timerRunning) startUITick();
+}
+
+function toggleTimer() {
+  const btn = document.getElementById('timerStart');
+  if (timerRunning) {
+    // Pause: save remaining seconds so we can resume
+    const remaining = Math.max(0, Math.round((timerEndTime - Date.now()) / 1000));
+    timerRunning = false;
+    timerEndTime = null;
+    stopUITick();
+    btn.textContent = '▶ START';
+    // Store remaining so we can resume from here
+    timerTotalSeconds = remaining; // treat remaining as the new "total" for resume
+    settings.timerState = { running: false, endTime: null, totalSeconds: remaining };
+    saveSettings();
+    chrome.runtime.sendMessage({ type: 'TIMER_PAUSE' });
+    renderTimerDisplay(remaining, settings.timerMinutes * 60);
+  } else {
+    // Start / resume from timerTotalSeconds
+    timerEndTime = Date.now() + timerTotalSeconds * 1000;
+    timerRunning = true;
+    btn.textContent = '⏸ PAUSE';
+    settings.timerState = { running: true, endTime: timerEndTime, totalSeconds: timerTotalSeconds };
+    saveSettings();
+    chrome.runtime.sendMessage({ type: 'TIMER_START', totalSeconds: timerTotalSeconds });
+    startUITick();
+  }
+}
+
+function resetTimer() {
+  timerRunning = false;
+  timerEndTime = null;
+  stopUITick();
+  timerTotalSeconds = settings.timerMinutes * 60;
+  settings.timerState = { running: false, endTime: null, totalSeconds: timerTotalSeconds };
+  saveSettings();
+  chrome.runtime.sendMessage({ type: 'TIMER_RESET' });
+  document.getElementById('timerStart').textContent = '▶ START';
+  renderTimerDisplay(timerTotalSeconds, timerTotalSeconds);
+}
+
+function startUITick() {
+  stopUITick();
+  const originalTotal = settings.timerMinutes * 60; // for ring progress
+  timerInterval = setInterval(() => {
+    const remaining = Math.max(0, Math.round((timerEndTime - Date.now()) / 1000));
+    renderTimerDisplay(remaining, originalTotal);
+    if (remaining <= 0) {
+      stopUITick();
+      timerRunning = false;
+      document.getElementById('timerStart').textContent = '▶ START';
+      // Stats/notification handled by background alarm — just update UI
+    }
+  }, 500); // 500ms for snappier updates
+}
+
+function stopUITick() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+function renderTimerDisplay(remainingSeconds, totalSeconds) {
+  const s = Math.max(0, remainingSeconds);
+  const m = Math.floor(s / 60).toString().padStart(2, '0');
+  const sec = (s % 60).toString().padStart(2, '0');
+  const el = document.getElementById('timerDisplay');
+  if (el) el.textContent = `${m}:${sec}`;
+  // Ring — r=82, circumference = 2π×82 ≈ 515.2
+  const ring = document.getElementById('timerRing');
+  if (ring) {
+    const progress = totalSeconds > 0 ? s / totalSeconds : 0;
+    ring.style.strokeDashoffset = 515.2 * (1 - progress);
+  }
+  // Running indicator dots
+  const d1 = document.getElementById('timerRunningDot');
+  const d2 = document.getElementById('timerRunningDot2');
+  if (d1) d1.classList.toggle('active', timerRunning);
+  if (d2) d2.classList.toggle('active', timerRunning);
+}
+
+function updateSessionDots() {
+  document.querySelectorAll('.session-dot').forEach((dot, i) => {
+    dot.classList.toggle('done', i < sessionsCompleted);
+  });
+}

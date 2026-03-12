@@ -121,20 +121,20 @@
   </div>
 
   <!-- timer tab -->
-  <div class="panel active" id="tab-timer">
+ <div class="panel active" id="tab-timer">
 
-    <div class="section first-section">
+    <div class="section">
       <div class="timer-modes">
-        <button class="timer-mode-btn active" data-mode="pomodoro" data-minutes="25">Pomodoro</button>
-        <button class="timer-mode-btn" data-mode="short" data-minutes="5">Short Break</button>
-        <button class="timer-mode-btn" data-mode="long" data-minutes="15">Long Break</button>
+        <button class="timer-mode-btn active" data-mode="pomodoro" data-minutes="25">POMODORO</button>
+        <button class="timer-mode-btn" data-mode="short" data-minutes="5">SHORT</button>
+        <button class="timer-mode-btn" data-mode="long" data-minutes="15">LONG</button>
       </div>
 
       <div class="timer-ring">
         <svg viewBox="0 0 180 180">
           <defs>
             <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color: var(--accent);"/>
+              <stop offset="0%" style="stop-color:var(--accent);"/>
               <stop offset="100%" style="stop-color:var(--accent2);"/>
             </linearGradient>
           </defs>
@@ -149,25 +149,40 @@
         </svg>
 
         <div class="timer-inner">
-          <!-- 7-segment digital display rendered by JS into this container -->
-          <div class="digital-clock" id="digitalClock">
-            <!-- populated by renderTimerDisplay() -->
-          </div>
+          <div class="timer-time" id="timerDisplay">25:00</div>
           <div class="timer-badge-row">
             <div class="timer-running-dot" id="timerRunningDot"></div>
             <div class="timer-mode-label" id="timerModeLabel">FOCUS</div>
             <div class="timer-running-dot" id="timerRunningDot2"></div>
           </div>
         </div>
-        
       </div>
 
+      <div class="timer-controls">
+        <button class="btn btn-secondary" id="timerReset">↺ RESET</button>
+        <button class="btn btn-primary" id="timerStart">▶ START</button>
+      </div>
 
+      <div style="margin-top:14px;">
+        <div style="font-size:9px; color:var(--text-muted); font-family:var(--font-mono); margin-bottom:7px; letter-spacing:1.5px;">SESSION PROGRESS</div>
+        <div class="sessions-row" id="sessionsRow">
+          <div class="session-dot"></div>
+          <div class="session-dot"></div>
+          <div class="session-dot"></div>
+          <div class="session-dot"></div>
+        </div>
+      </div>
     </div>
 
-    
-    
-
+    <div class="section">
+      <div class="section-title" style="margin-bottom:10px;">Custom Duration</div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:11px; color:var(--text-muted);">Minutes:</span>
+        <input type="number" id="customMinutes" min="1" max="120" value="25"
+          style="width:60px; background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:5px 8px; color:var(--text); font-size:12px; font-family:var(--font-mono); outline:none; text-align:center;">
+        <button class="btn-small" id="setCustomTimer">SET</button>
+      </div>
+    </div>
 
   </div>
 
