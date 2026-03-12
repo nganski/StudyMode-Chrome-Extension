@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyMode — Site Blocked</title>
+    <link rel="stylesheet" href="blocked.css">
+</head>
+<body>
+  <div class="grid"></div>
+  <div class="glow"></div>
+
+  <div class="card">
+    <div class="icon">🎓</div>
+    <div class="tag">🚫 StudyMode Active</div>
+    <h1>Stay on track.</h1>
+    <div class="site-name" id="siteName"></div>
+    <p>This site is blocked to help you focus on what matters. You've got this!</p>
+
+    <div class="quote" id="quoteBox"></div>
+
+    <div class="actions">
+      <button class="btn btn-primary" onclick="history.back()">← Go Back</button>
+      <button class="btn btn-secondary" onclick="window.close()">✕ Close Tab</button>
+    </div>
+
+    <div class="timer-badge" id="timerBadge"></div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const site = params.get('site') || 'this site';
+    document.getElementById('siteName').textContent = site;
+
+    const quotes = [
+      { text: "The secret of getting ahead is getting started.", author: "MARK TWAIN" },
+      { text: "It always seems impossible until it's done.", author: "NELSON MANDELA" },
+      { text: "Don't watch the clock; do what it does. Keep going.", author: "SAM LEVENSON" },
+      { text: "Success is the sum of small efforts repeated day in and day out.", author: "ROBERT COLLIER" },
+      { text: "You don't have to be great to start, but you have to start to be great.", author: "ZIG ZIGLAR" },
+      { text: "The future depends on what you do today.", author: "MAHATMA GANDHI" },
+      { text: "Concentrate all your thoughts upon the work at hand.", author: "ALEXANDER GRAHAM BELL" },
+      { text: "Push yourself, because no one else is going to do it for you.", author: "UNKNOWN" },
+    ];
+
+    const q = quotes[Math.floor(Math.random() * quotes.length)];
+    document.getElementById('quoteBox').innerHTML = `"${q.text}" <strong>— ${q.author}</strong>`;
+
+    // Show remaining study timer if available
+    chrome.storage.local.get('studymodeSettings', (data) => {
+      const s = data?.studymodeSettings;
+      if (s && s.timerMinutes) {
+        document.getElementById('timerBadge').innerHTML =
+          `<span>Keep going — your study session is active</span>`;
+      }
+    });
+  </script>
+</body>
+</html>

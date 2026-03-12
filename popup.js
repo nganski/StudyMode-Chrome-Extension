@@ -3,6 +3,7 @@ const DEFAULT_SETTINGS = {
     blockSocial: true,
     blockYouTube: true,
     blockGaming: false,
+    blockAI: false,
     darkMode: true,
     adBlock: true,
     customerSites: [],
@@ -16,7 +17,7 @@ let timerRunning = false;
 let timerEndTime = null;    // ms timestamp when timer will end
 let timerTotalSeconds = 1500;
 
-document.addEventListener('DOMContentLoaded', async() => {
+document.addEventListener('DOMContentLoaded', async () => {
   const stored = await chrome.storage.local.get('studymodeSettings');
   if (stored.studymodeSettings) {
     settings = { ...DEFAULT_SETTINGS, ...stored.studymodeSettings };
@@ -39,43 +40,43 @@ document.addEventListener('DOMContentLoaded', async() => {
   }
   sessionsCompleted = settings.stats?.sessionsCompleted || 0;
 
+  initUI();
+  initTabs();
+  initTimer();
+  initMusic();
+  initStats();
+  initBlocker();
 
+  // Sync audio state from offscreen
+  chrome.runtime.sendMessage({ type: 'GET_AUDIO_STATE' });
 
-    initUI();
-    initTabs();
-    initBlocker();
-    initTimer();
-
-    // Sync audio state from offscreen
-    chrome.runtime.sendMessage({ type: 'GET_AUDIO_STATE' });
-
-    // Listen for background messages — registered here so DOM is guaranteed ready
-    chrome.runtime.onMessage.addListener((msg) => {
-      if (msg.type === 'AUDIO_STATE_UPDATE') {
-        isPlaying = msg.isPlaying;
-        currentSound = msg.currentSound;
-        syncMusicUI();
-      }
-      if (msg.type === 'TIMER_DONE') {
-        timerRunning = false;
-        timerEndTime = null;
-        stopUITick();
-        const startBtn = document.getElementById('timerStart');
-        if (startBtn) startBtn.textContent = '▶ START';
-        renderTimerDisplay(0, timerTotalSeconds);
-        // Small delay to ensure background has finished writing stats to storage
-        setTimeout(() => {
-          chrome.storage.local.get('studymodeSettings', (data) => {
-            if (data.studymodeSettings) {
-              settings = { ...settings, stats: data.studymodeSettings.stats };
-            }
-            sessionsCompleted = settings.stats?.sessionsCompleted || 0;
-            updateSessionDots();
-            updateStatsUI();
-          });
-        }, 200);
-      }
-    });
+  // Listen for background messages — registered here so DOM is guaranteed ready
+  chrome.runtime.onMessage.addListener((msg) => {
+    if (msg.type === 'AUDIO_STATE_UPDATE') {
+      isPlaying = msg.isPlaying;
+      currentSound = msg.currentSound;
+      syncMusicUI();
+    }
+    if (msg.type === 'TIMER_DONE') {
+      timerRunning = false;
+      timerEndTime = null;
+      stopUITick();
+      const startBtn = document.getElementById('timerStart');
+      if (startBtn) startBtn.textContent = '▶ START';
+      renderTimerDisplay(0, timerTotalSeconds);
+      // Small delay to ensure background has finished writing stats to storage
+      setTimeout(() => {
+        chrome.storage.local.get('studymodeSettings', (data) => {
+          if (data.studymodeSettings) {
+            settings = { ...settings, stats: data.studymodeSettings.stats };
+          }
+          sessionsCompleted = settings.stats?.sessionsCompleted || 0;
+          updateSessionDots();
+          updateStatsUI();
+        });
+      }, 200);
+    }
+  });
 });
 
 
@@ -137,13 +138,15 @@ function initTabs(){
 // blockers
 const SOCIAL_SITES = ['instagram.com', 'tiktok.com', 'twitter.com', 'x.com', 'reddit.com', 'facebook.com', 'snapchat.com', 'pinterest.com'];
 const GAMING_SITES = ['twitch.tv', 'netflix.com', 'hulu.com', 'discord.com'];
+const AI_SITES = ['chatgpt.com', 'claude.ai', 'gemini.google.com', 'copilot.microsoft.com']
 
 function renderBlockedTags(){
   const list = document.getElementById('blockedSitesList');
   const active = [];
 
   if (settings.blockSocial) active.push(...SOCIAL_SITES.slice(0,4));
-  if (settings.blockGaming) active.push(...GAMING_SITES.slice(0,2));
+  if (settings.blockGaming) active.push(...GAMING_SITES.slice(0,3));
+  if (settings.blockAI) active.push(...AI_SITES.slice(0,2));
   list.innerHTML = active.map(s =>  `<span class="blocked-tag">${s}</span>`).join('');
 }
 

@@ -13,7 +13,7 @@
 
 <body>
 
-    <div class="header">
+  <div class="header">
         <div class="logo">
             <div class="logo-icon"><img src="images/icon16.png" alt=""></div>
             <div>
@@ -24,17 +24,17 @@
             <span id="masterLabel">OFF</span>
             <button class="toggleButton" id="masterToggle" title="Enable StudyMode"></button>
         </div>
-    </div>
+  </div>
 
-    <div class="tabs">
+  <div class="tabs">
         <button class="tab active" data-tab="focus">Focus</button>
         <button class="tab" data-tab="timer">Timer</button>
         <button class="tab" data-tab="music">Music</button>
         <button class="tab" data-tab="stats">Stats</button>
-    </div>
+  </div>
     
     <!-- focus tab -->
-    <div class="panel active" id="tab-focus">
+  <div class="panel active" id="tab-focus">
 
       <div class="section first-section">
         <div class="section-title" style="margin-bottom:10px;">Distraction Blocking</div>
@@ -73,6 +73,17 @@
             </div>
           </div>
           <button class="mini-toggle" id="toggle-gaming" data-key="blockGaming"></button>
+        </div>
+
+        <div class="feature-row">
+          <div class="feature-info">
+            <div class="feature-icon ic-block">🤖</div>
+            <div>
+              <div class="feature-label">AI</div>
+              <div class="feature-sub">ChatGPT, Claude, Gemini, Copilot</div>
+            </div>
+          </div>
+          <button class="mini-toggle" id="toggle-ai" data-key="blockAI"></button>
         </div>
 
         <div class="blocked-list" id="blockedSitesList"></div>
@@ -123,7 +134,7 @@
   <!-- timer tab -->
  <div class="panel active" id="tab-timer">
 
-    <div class="section">
+    <div class="section first-section">
       <div class="timer-modes">
         <button class="timer-mode-btn active" data-mode="pomodoro" data-minutes="25">POMODORO</button>
         <button class="timer-mode-btn" data-mode="short" data-minutes="5">SHORT</button>
