@@ -249,7 +249,7 @@ body{
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    color: var(--text-muted);
+    color: var(--text);
     display: flex;
     align-items: center;
     gap: 5px;
@@ -261,18 +261,16 @@ body{
     color: var(--accent);
 }
 
-/* distraction section */
 .first-section{
     background-size:cover;
     background-position:center;
     background-color: var(--lightBg);
-    color: var(--text-muted);
+    color: var(--text);
     padding-top: 20px;
     
     border-radius: 0;
     border-bottom-left-radius:10px;
     border-bottom-right-radius:10px;
-
 }
 
 
@@ -297,7 +295,7 @@ body{
     display: flex; 
     align-items: center; 
     gap: 8px; 
-
+    
     z-index: 2;
 }
 
@@ -319,9 +317,12 @@ body{
 }
 .feature-sub{ 
     font-size: 10px; 
-    color: var(--text-muted); 
+    color: var(--text-muted);
     margin-top: 1px; 
-    
+}
+.first-section .feature-sub{
+    color: var(--border);
+
 }
 
 /* Mini toggle */
@@ -368,11 +369,11 @@ body{
 
 .blocked-tag{
     padding: 3px 8px;
-    background: rgba(255, 94, 109, 0.12);
-    border: 1px solid rgba(255, 94, 109, 0.25);
+    background: rgba(134, 77, 46, 0.12);
+    border: 1px solid rgba(255, 201, 94, 0.25);
     border-radius: 4px;
     font-size: 10px;
-    color: #ff8f9a;
+    color: var(--accent2);
     font-family: var(--font-mono);
 }
 
@@ -430,6 +431,83 @@ body{
     font-size: 10px;
     color: var(--danger);
     font-family: var(--font-mono);
+}
+
+/* timer tab */
+ /* Outer ring */
+.timer-ring {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    margin: 0 auto 14px;
+}
+
+.timer-ring svg {
+    transform: rotate(-90deg);
+    width: 180px;
+    height: 180px;
+    filter: drop-shadow(0 0 8px rgba(127, 255, 178, 0.25));
+}
+
+.timer-ring-bg {
+    fill: none;
+    stroke: rgba(37, 42, 56, 0.9);
+    stroke-width: 5;
+}
+
+.timer-ring-track {
+    fill: none;
+    stroke: rgba(127, 255, 178, 0.06);
+    stroke-width: 5;
+    stroke-dasharray: 6 4;
+}
+
+.timer-ring-fill {
+    fill: none;
+    stroke: url(#ringGradient);
+    stroke-width: 5;
+    stroke-linecap: round;
+    /* transition: stroke-dashoffset 0.6s linear; */
+    /* filter: drop-shadow(0 0 4px rgba(127, 255, 178, 0.6)); */
+}
+
+/* Inner panel — the "LCD screen" */
+.timer-inner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    width: 132px;
+}
+/* Digital segment display via SVG-drawn digits */
+.digital-clock {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    line-height: 1;
+}
+
+/* Sessions */
+.sessions-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    align-items: center;
+}
+
+.session-dot {
+    flex: 1;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--border);
+    transition: background 0.3s, box-shadow 0.3s;
+}
+
+.session-dot.done {
+    background: var(--accent);
+    box-shadow: 0 0 6px rgba(127,255,178,0.6);
 }
 
 /* Footer */
