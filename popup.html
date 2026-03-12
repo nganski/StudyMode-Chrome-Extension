@@ -132,7 +132,7 @@
   </div>
 
   <!-- timer tab -->
- <div class="panel active" id="tab-timer">
+ <div class="panel" id="tab-timer">
 
     <div class="section first-section">
       <div class="timer-modes">
@@ -197,11 +197,138 @@
 
   </div>
 
+  <!-- music tab -->
   <div class="panel" id="tab-music">
+
+    <div class="section">
+      <div class="section-title" style="margin-bottom:10px;">Focus Sounds</div>
+      <div class="music-grid">
+        <div class="music-card" data-sound="rain">
+          <div class="music-card-icon">🌧️</div>
+          <div class="music-card-info">
+            <div class="music-card-name">Rain</div>
+            <div class="music-card-type">White Noise</div>
+          </div>
+        </div>
+        <div class="music-card" data-sound="forest">
+          <div class="music-card-icon">🌲</div>
+          <div class="music-card-info">
+            <div class="music-card-name">Forest</div>
+            <div class="music-card-type">Nature</div>
+          </div>
+        </div>
+        <div class="music-card" data-sound="cafe">
+          <div class="music-card-icon">☕</div>
+          <div class="music-card-info">
+            <div class="music-card-name">Café</div>
+            <div class="music-card-type">Ambient</div>
+          </div>
+        </div>
+        <div class="music-card" data-sound="ocean">
+          <div class="music-card-icon">🌊</div>
+          <div class="music-card-info">
+            <div class="music-card-name">Ocean</div>
+            <div class="music-card-type">Nature</div>
+          </div>
+        </div>
+        <div class="music-card" data-sound="fire">
+          <div class="music-card-icon">🔥</div>
+          <div class="music-card-info">
+            <div class="music-card-name">Fireplace</div>
+            <div class="music-card-type">Cozy</div>
+          </div>
+        </div>
+        <div class="music-card" data-sound="lofi">
+          <div class="music-card-icon">🎵</div>
+          <div class="music-card-info">
+            <div class="music-card-name">Lo-Fi</div>
+            <div class="music-card-type">Music</div>
+          </div>
+        </div>
+        <div class="music-card" data-sound="brown">
+          <div class="music-card-icon">📻</div>
+          <div class="music-card-info">
+            <div class="music-card-name">Brown Noise</div>
+            <div class="music-card-type">Noise</div>
+          </div>
+        </div>
+        <div class="music-card" data-sound="white">
+          <div class="music-card-icon">⬜</div>
+          <div class="music-card-info">
+            <div class="music-card-name">White Noise</div>
+            <div class="music-card-type">Noise</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="now-playing paused" id="nowPlaying">
+        <div class="now-playing-bar">
+          <div class="bar" style="height:6px"></div>
+          <div class="bar" style="height:10px"></div>
+          <div class="bar" style="height:4px"></div>
+          <div class="bar" style="height:8px"></div>
+        </div>
+        <div class="now-playing-text">
+          <div class="now-playing-name" id="nowPlayingName">No sound selected</div>
+          <div class="now-playing-status" id="nowPlayingStatus">PAUSED</div>
+        </div>
+        <button class="play-btn" id="playPauseBtn">▶</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="volume-row">
+        <span class="volume-label">VOL</span>
+        <input type="range" class="slider" id="volumeSlider" min="0" max="100" value="50">
+        <span style="font-size:10px; color:var(--text-muted); font-family:var(--font-mono); width:28px; text-align:right;" id="volumeLabel">50</span>
+      </div>
+    </div>
+
+    <div class="section" style="padding:10px 14px;">
+      <div style="font-size:10px; color:var(--text-muted); line-height:1.5; font-family:var(--font-mono);">
+        🎵 Lo-Fi opens YouTube Music in a new tab. Other sounds are synthesized locally.
+      </div>
+    </div>
 
   </div>
 
+  <!-- stats tab -->
   <div class="panel" id="tab-stats">
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" id="statFocus" style="color:var(--accent)">0</div>
+        <div class="stat-label">Pomodoros</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statMinutes" style="color:var(--accent2)">0</div>
+        <div class="stat-label">Min Today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statStreak" style="color:var(--accent3)">0</div>
+        <div class="stat-label">Day Streak</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Weekly Goal</div>
+        <div style="font-size:10px; color:var(--accent); font-family:var(--font-mono);" id="weeklyPct">0%</div>
+      </div>
+      <div class="streak-bar">
+        <div class="streak-fill" id="weeklyBar" style="width:0%"></div>
+      </div>
+      <div style="font-size:10px; color:var(--text-muted); margin-top:6px;" id="weeklyDetail">0 / 25 sessions this week</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title" style="margin-bottom:10px;">Today's Blocks</div>
+      <div id="blockedStats" style="font-size:11px; color:var(--text-muted);">No blocks recorded yet.</div>
+    </div>
+
+    <div style="text-align:center; margin-top:4px;">
+      <button class="btn btn-secondary" id="resetStats" style="font-size:10px; padding:6px 16px;">Reset Stats</button>
+    </div>
 
   </div>
     

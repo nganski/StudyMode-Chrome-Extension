@@ -85,7 +85,7 @@ function saveSettings(){
   chrome.runtime.sendMessage({ type: 'SETTINGS_UPDATED', settings });
 }
 
-
+// UI
 function initUI(){
     const masterToggle = document.getElementById('masterToggle');
     const masterLabel = document.getElementById('masterLabel');

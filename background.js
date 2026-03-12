@@ -12,14 +12,23 @@ let settings = null;
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     switch (msg.type){
         case 'SETTINGS_UPDATED':
-            settings = msg.settings;
-            applyAllRules();
-            break;
+          settings = msg.settings;
+          applyAllRules();
+          updateContentScripts();
+          break;
 
         case 'APPLY_RULES':
-            settings = msg.settings;
-            applyAllRules();
-            break;
+          settings = msg.settings;
+          applyAllRules();
+          break;
+
+        case 'GET_SETTINGS':
+          sendResponse(settings || getDefaults());
+          break;
+
+        case 'SITE_BLOCKED':
+          incrementBlockCount();
+          break;
 
         case 'TIMER_START':
             startTimerAlarm(msg.totalSeconds);
@@ -116,4 +125,46 @@ async function startTimerAlarm(totalSeconds) {
 
 async function clearTimerAlarm() {
   await chrome.alarms.clear('studymode-timer');
+}
+
+// site blocking
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (!settings || !settings.studyModeOn) return;
+  if (changeInfo.status !== 'loading') return;
+  if (!tab.url) return;
+
+  const url = tab.url.toLowerCase();
+  if (url.includes(chrome.runtime.id)) return; // don't redirect our own pages
+
+  const blocked = getBlockedSites();
+  for (const site of blocked) {
+    if (url.includes(site)) {
+      let displayName = site;
+      try { displayName = new URL(tab.url).hostname.replace(/^www\./, ''); } catch (e) {}
+      chrome.tabs.update(tabId, {
+        url: chrome.runtime.getURL('blocked.html') + '?site=' + encodeURIComponent(displayName)
+      });
+      incrementBlockCount();
+      break;
+    }
+  }
+});
+
+function getBlockedSites() {
+  if (!settings) return [];
+  const sites = [];
+  if (settings.blockSocial) sites.push(...SOCIAL_SITES);
+  if (settings.blockGaming) sites.push(...GAMING_SITES);
+  if (settings.customSites) sites.push(...settings.customSites);
+  return sites;
+}
+
+// ad blocking rules
+function applyAllRules() {
+  if (!settings) return;
+  chrome.declarativeNetRequest.updateEnabledRulesets({
+    enableRulesetIds: settings.adBlock ? ['ad_block_rules'] : [],
+    disableRulesetIds: settings.adBlock ? [] : ['ad_block_rules']
+  }).catch(() => {});
+  updateContentScripts();
 }
