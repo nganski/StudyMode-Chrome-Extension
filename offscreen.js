@@ -63,7 +63,7 @@ function stopSound() {
 
 function setVolume(v) { if (gainNode) gainNode.gain.value = v; }
 
-// ── Audio Core ──────────────────────────────────────────
+// Audio Core 
 
 function makeNoiseBuffer(ctx, type) {
   const len = 10 * ctx.sampleRate; 
@@ -93,7 +93,7 @@ function loopBuffer(ctx, buf, dest) {
   return src;
 }
 
-// ── Immersive Generators ────────────────────────────────
+// Noise Generators
 
 function createCafe(ctx, dest) {
   // --- LAYER 1: THE "WALL OF TALK" ---
@@ -267,9 +267,7 @@ function createFire(ctx, dest) {
   snapFilter.connect(dest);
   activeNodes.push(rumble, sizzle, sGain, snapFilter);
 }
-
-// ── Optimized Rain & Others ─────────────────────────────
-
+ 
 function createRain(ctx, dest) {
   const drops = ctx.createBiquadFilter();
   drops.type = 'bandpass'; drops.frequency.value = 2800;
