@@ -113,7 +113,7 @@ function initUI(){
             masterLabel.textContent = settings.studyModeOn ? 'ON' : 'OFF';
             updateStatusIndicator();
             saveSettings();
-            renderBlockedTags();
+            // renderBlockedTags();
         });
     }
 
@@ -124,7 +124,7 @@ function initUI(){
       settings[key] = !settings[key];
       btn.classList.toggle('on', settings[key]);
       saveSettings();
-      renderBlockedTags();
+      // renderBlockedTags();
     });
   });
 }
@@ -153,19 +153,19 @@ const SOCIAL_SITES = ['instagram.com', 'tiktok.com', 'twitter.com', 'x.com', 're
 const GAMING_SITES = ['twitch.tv', 'netflix.com', 'hulu.com', 'discord.com'];
 const AI_SITES = ['chatgpt.com', 'claude.ai', 'gemini.google.com', 'copilot.microsoft.com']
 
-function renderBlockedTags(){
-  const list = document.getElementById('blockedSitesList');
-  const active = [];
+// function renderBlockedTags(){
+//   const list = document.getElementById('blockedSitesList');
+//   const active = [];
 
-  if (settings.blockSocial) active.push(...SOCIAL_SITES.slice(0,4));
-  if (settings.blockGaming) active.push(...GAMING_SITES.slice(0,3));
-  if (settings.blockAI) active.push(...AI_SITES.slice(0,2));
-  list.innerHTML = active.map(s =>  `<span class="blocked-tag">${s}</span>`).join('');
-}
+//   if (settings.blockSocial) active.push(...SOCIAL_SITES.slice(0,2));
+//   if (settings.blockGaming) active.push(...GAMING_SITES.slice(0,2));
+//   if (settings.blockAI) active.push(...AI_SITES.slice(0,2));
+//   list.innerHTML = active.map(s =>  `<span class="blocked-tag">${s}</span>`).join('');
+// }
 
 function applyBlockingRules() {
   chrome.runtime.sendMessage({ type: 'APPLY_RULES', settings });
-  renderBlockedTags();
+  // renderBlockedTags();
 }
 
 function renderCustomSites(){
@@ -184,7 +184,7 @@ function renderCustomSites(){
 }
 
 function initBlocker() {
-  renderBlockedTags();
+  // renderBlockedTags();
   renderCustomSites();
 
   document.getElementById('addCustomSite').addEventListener('click', () => {
