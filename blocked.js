@@ -23,6 +23,8 @@ const quotes = [
     { text: "Push yourself, because no one else is going to do it for you.", author: "UNKNOWN" },
     { text: "Energy and persistence conquer all things.", author: "BENJAMIN FRANKLIN" },
     { text: "Believe you can and you're halfway there.", author: "THEODORE ROOSEVELT" },
+    { text: "Nah, I'd win.", author: "You"},
+    { text: "Nah, I'd win.", author: "You"}
 ];
 
 const q = quotes[Math.floor(Math.random() * quotes.length)];
