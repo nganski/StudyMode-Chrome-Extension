@@ -623,12 +623,32 @@ body{
 }
 
 /* music tab */
-/* Music */
 .music-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 6px;
     margin-bottom: 12px;
+    position: relative; 
+    z-index: 2;
+}
+
+#tab-music .first-section {
+    position: relative; 
+    overflow: hidden; /* Keeps the giant "o" from creating scrollbars */
+}
+
+#tab-music .first-section::before {
+    content: "♫";
+    position: absolute; 
+    transform: rotate(25deg);
+    bottom: 20px;      
+    left: 40px;
+    font-size: 300px;
+    line-height: 1;
+    font-weight: bold;
+    color: var(--accent); 
+    z-index: 0;        
+    pointer-events: none; 
 }
 
 .music-card {
@@ -694,6 +714,8 @@ body{
     border-radius: 8px;
     border: 1px solid var(--border);
     margin-top: 10px;
+
+    
 }
 
 .now-playing-bar {
@@ -701,6 +723,7 @@ body{
     gap: 2px;
     align-items: flex-end;
     height: 16px;
+    
 }
 
 .bar {
@@ -708,6 +731,7 @@ body{
     background: var(--accent2);
     border-radius: 2px;
     animation: bounce 0.8s ease-in-out infinite alternate;
+    
 }
 
 .bar:nth-child(2) { animation-delay: 0.15s; }
@@ -742,24 +766,23 @@ body{
 
 .play-btn:hover { transform: scale(1.1); }
 
-/* Color accents per feature */
-.ic-block { background: rgba(255, 94, 109, 0.15); }
-.ic-dark { background: rgba(91, 200, 245, 0.12); }
-.ic-ads { background: rgba(127, 255, 178, 0.12); }
-.ic-timer { background: rgba(255, 199, 0, 0.12); }
-
 /* Stats */
 .stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 8px;
+    justify-items: center;
     margin-bottom: 10px;
+    padding-bottom: 12px;
+
 }
+
 
 .stat-card {
     background: var(--surface2);
     border-radius: 8px;
     padding: 10px;
+    width: 90px;
     text-align: center;
     border: 1px solid var(--border);
 }
@@ -787,6 +810,13 @@ body{
     background: linear-gradient(90deg, var(--accent), var(--accent2));
     transition: width 0.5s ease;
 }
+
+/* Color accents per feature */
+.ic-block { background: rgba(255, 94, 109, 0.15); }
+.ic-dark { background: rgba(91, 200, 245, 0.12); }
+.ic-ads { background: rgba(127, 255, 178, 0.12); }
+.ic-timer { background: rgba(255, 199, 0, 0.12); }
+
 
 /* Footer */
 .footer{
