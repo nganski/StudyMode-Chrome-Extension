@@ -32,7 +32,7 @@ A feature-rich focus extension built for students.
 ## File Structure
 
 ```
-studymode-extension/
+studymode-chrome-extension/
 ├── manifest.json          # Extension config (MV3)
 ├── popup.html             # Main UI
 ├── popup.js               # UI logic, timer, music engine
@@ -43,8 +43,9 @@ studymode-extension/
 ├── rules/
 │   ├── ad_block_rules.json    # declarativeNetRequest ad rules
 │   └── site_block_rules.json  # (placeholder)
-└── icons/
+└── images/
     ├── icon16.png
     ├── icon48.png
-    └── icon128.png
+    ├── icon128.png
+    └──The_Lonely_T_Rex.png
 ```
