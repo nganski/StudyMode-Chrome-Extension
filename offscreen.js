@@ -44,7 +44,8 @@ function playSound(sound, volume = 0.5) {
     case 'cafe':    createCafe(ctx, gainNode); break;
     case 'lofi':
       chrome.runtime.sendMessage({ type: 'OPEN_LOFI' });
-      isPlaying = true;
+      isPlaying = false;   // lofi plays in a tab, not via offscreen audio
+      currentSound = null; // prevent re-opening tab on every restore
       break;
   }
 }

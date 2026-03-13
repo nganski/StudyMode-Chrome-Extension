@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "StudyMode — Focus Extension",
-  "version": "1.1.0",
+  "version": "1.0.0",
   "description": "Block distractions, enable dark mode, run a study timer, play focus music, and block ads — built for students.",
   "permissions": [
     "storage",
@@ -54,7 +54,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["blocked.html", "blocked.js", "offscreen.html", "icons/*"],
+      "resources": ["blocked.html", "blocked.css", "blocked.js", "offscreen.html", "images/*"],
       "matches": ["<all_urls>"]
     }
   ]

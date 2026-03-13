@@ -1,5 +1,4 @@
 // StudyMode - Background Service Worker
-// Manages site blocking, dark mode injection, and offscreen audio document.
 
 const SOCIAL_SITES = ['instagram.com', 'tiktok.com', 'twitter.com', 'x.com', 'reddit.com', 'facebook.com', 'snapchat.com', 'pinterest.com'];
 const GAMING_SITES = ['twitch.tv', 'netflix.com', 'hulu.com', 'discord.com'];
@@ -7,14 +6,14 @@ const AI_SITES = ['chatgpt.com', 'claude.ai', 'gemini.google.com', 'copilot.micr
 
 let settings = null;
 
-// ── Startup ───────────────────────────────────────────────
+// Startup 
 chrome.storage.local.get('studymodeSettings', (data) => {
   settings = data.studymodeSettings || getDefaults();
   applyAllRules();
   restoreAudioIfNeeded();
 });
 
-// ── Messages ──────────────────────────────────────────────
+// Messages 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   switch (msg.type) {
     case 'SETTINGS_UPDATED':
@@ -30,7 +29,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case 'GET_SETTINGS':
       sendResponse(settings || getDefaults());
-      break;
+      return false;
 
     case 'SITE_BLOCKED':
       incrementBlockCount();
@@ -85,13 +84,19 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
 
     case 'OPEN_LOFI':
-      chrome.tabs.create({ url: 'https://www.youtube.com/watch?v=jfKfPfyJRdk', active: false });
+      chrome.tabs.query({ url: '*://www.youtube.com/watch?v=jfKfPfyJRdk*' }, (tabs) => {
+        if (tabs.length > 0) {
+          chrome.tabs.update(tabs[0].id, { active: true });
+        } else {
+          chrome.tabs.create({ url: 'https://www.youtube.com/watch?v=jfKfPfyJRdk', active: false });
+        }
+      });
       break;
   }
-  return true;
+  return false;
 });
 
-// ── Offscreen document ────────────────────────────────────
+// Offscreen document
 let offscreenCreating = null;
 
 async function ensureOffscreen() {
@@ -109,6 +114,7 @@ async function ensureOffscreen() {
 
 async function restoreAudioIfNeeded() {
   if (!settings || !settings.audioPlaying || !settings.selectedSound) return;
+  if (settings.selectedSound === 'lofi') return; // lofi lives in a tab, never auto-reopen
   await ensureOffscreen();
   // Small delay to let offscreen doc initialise
   setTimeout(() => {
@@ -121,8 +127,7 @@ async function restoreAudioIfNeeded() {
   }, 300);
 }
 
-// ── Timer alarm ───────────────────────────────────────────
-// The alarm fires when the timer reaches zero, even if the popup is closed.
+// Timer alarm 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name !== 'studymode-timer') return;
 
@@ -157,7 +162,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
   // Fire notification
   chrome.notifications.create('timer-done', {
     type: 'basic',
-    iconUrl: 'icons/icon48.png',
+    iconUrl: 'images/icon48.png',
     title: '⏰ StudyMode — Session Complete!',
     message: s.timerMode === 'pomodoro'
       ? `Great work! Pomodoro #${s.stats.pomodoros} done. Take a short break.`
@@ -177,7 +182,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
   chrome.runtime.sendMessage({ type: 'TIMER_DONE' }).catch(() => {});
 });
 
-// ── Timer control messages ────────────────────────────────
+// Timer control messages
 async function startTimerAlarm(totalSeconds) {
   await chrome.alarms.clear('studymode-timer');
   chrome.alarms.create('studymode-timer', {
@@ -189,7 +194,7 @@ async function clearTimerAlarm() {
   await chrome.alarms.clear('studymode-timer');
 }
 
-// ── Navigation / site blocking ────────────────────────────
+// site blocking 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (!settings || !settings.studyModeOn) return;
   if (changeInfo.status !== 'loading') return;
@@ -217,11 +222,12 @@ function getBlockedSites() {
   const sites = [];
   if (settings.blockSocial) sites.push(...SOCIAL_SITES);
   if (settings.blockGaming) sites.push(...GAMING_SITES);
+  if (settings.blockAI) sites.push(...AI_SITES);
   if (settings.customSites) sites.push(...settings.customSites);
   return sites;
 }
 
-// ── Ad block rules ────────────────────────────────────────
+// Ad block rules 
 function applyAllRules() {
   if (!settings) return;
   chrome.declarativeNetRequest.updateEnabledRulesets({
@@ -231,7 +237,7 @@ function applyAllRules() {
   updateContentScripts();
 }
 
-// ── Dark mode / YT injection ──────────────────────────────
+// Dark mode / YT injection 
 function updateContentScripts() {
   if (!settings) return;
   chrome.tabs.query({}, (tabs) => {
@@ -323,6 +329,7 @@ function getDefaults() {
     blockSocial: true,
     blockYouTube: true,
     blockGaming: false,
+    blockAI: false,
     darkMode: true,
     adBlock: true,
     customSites: [],

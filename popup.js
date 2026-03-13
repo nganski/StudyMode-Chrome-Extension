@@ -6,9 +6,18 @@ const DEFAULT_SETTINGS = {
     blockAI: false,
     darkMode: true,
     adBlock: true,
-    customerSites: [],
+    customSites: [],
     timerMinutes: 25,
-    timerMode: 'pomodoro'
+    timerMode: 'pomodoro',
+    volume: 50,
+    selectedSound: null,
+    audioPlaying: false,
+    timerState: { running: false, endTime: null, totalSeconds: 1500 },
+    stats: {
+      pomodoros: 0, minutesToday: 0, streak: 0,
+      lastDate: null, weekSessions: 0, weekStart: null, blocksToday: 0,
+      sessionsCompleted: 0
+    }
 };
 
 let settings = { ...DEFAULT_SETTINGS };
@@ -104,6 +113,7 @@ function initUI(){
             masterLabel.textContent = settings.studyModeOn ? 'ON' : 'OFF';
             updateStatusIndicator();
             saveSettings();
+            renderBlockedTags();
         });
     }
 
@@ -114,7 +124,7 @@ function initUI(){
       settings[key] = !settings[key];
       btn.classList.toggle('on', settings[key]);
       saveSettings();
-      
+      renderBlockedTags();
     });
   });
 }
@@ -182,6 +192,7 @@ function initBlocker() {
     let site = input.value.trim().toLowerCase()
       .replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
     if (!site) return;
+    settings.customSites = settings.customSites || [];
     if (!settings.customSites.includes(site)) {
       settings.customSites.push(site);
       saveSettings();
@@ -388,7 +399,8 @@ function sendPlaySound(sound) {
   currentSound = sound;
   isPlaying = true;
   settings.selectedSound = sound;
-  settings.audioPlaying = true;
+  // lofi plays in a browser tab — don't persist as audioPlaying so it's never auto-restored
+  settings.audioPlaying = sound !== 'lofi';
   saveSettings();
   chrome.runtime.sendMessage({
     type: 'PLAY_SOUND',
