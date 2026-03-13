@@ -16,6 +16,9 @@ let timerInterval = null;   // updates display every second
 let timerRunning = false;
 let timerEndTime = null;    // ms timestamp when timer will end
 let timerTotalSeconds = 1500;
+let sessionsCompleted = 0;
+let currentSound = null;
+let isPlaying = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
   const stored = await chrome.storage.local.get('studymodeSettings');
@@ -325,4 +328,124 @@ function updateSessionDots() {
   document.querySelectorAll('.session-dot').forEach((dot, i) => {
     dot.classList.toggle('done', i < sessionsCompleted);
   });
+}
+
+//  Music — all music go to background then to offscreen
+const SOUND_LABELS = {
+  rain: '🌧️ Rain',
+  forest: '🌲 Forest',
+  cafe: '☕ Café',
+  ocean: '🌊 Ocean',
+  fire: '🔥 Fireplace',
+  lofi: '🎵 Lo-Fi',
+  brown: '📻 Brown Noise',
+  white: '⬜ White Noise'
+};
+
+function initMusic() {
+  document.querySelectorAll('.music-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const sound = card.dataset.sound;
+
+      if (currentSound === sound && isPlaying) {
+        // Stop
+        sendStopSound();
+        card.classList.remove('active');
+      } else {
+        // Switch / start
+        document.querySelectorAll('.music-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        sendPlaySound(sound);
+      }
+    });
+  });
+
+  document.getElementById('playPauseBtn').addEventListener('click', () => {
+    if (!currentSound && !isPlaying) return;
+    if (isPlaying) {
+      sendStopSound();
+    } else {
+      sendPlaySound(currentSound);
+    }
+  });
+
+  const volSlider = document.getElementById('volumeSlider');
+  volSlider.value = settings.volume;
+  document.getElementById('volumeLabel').textContent = settings.volume;
+
+  volSlider.addEventListener('input', () => {
+    settings.volume = parseInt(volSlider.value);
+    document.getElementById('volumeLabel').textContent = settings.volume;
+    chrome.runtime.sendMessage({ type: 'SET_VOLUME', volume: settings.volume / 100 });
+    saveSettings();
+  });
+
+  // Restore UI to match persisted audio state
+  syncMusicUI();
+}
+
+function sendPlaySound(sound) {
+  currentSound = sound;
+  isPlaying = true;
+  settings.selectedSound = sound;
+  settings.audioPlaying = true;
+  saveSettings();
+  chrome.runtime.sendMessage({
+    type: 'PLAY_SOUND',
+    sound,
+    volume: settings.volume / 100
+  });
+  syncMusicUI();
+}
+
+function sendStopSound() {
+  isPlaying = false;
+  settings.audioPlaying = false;
+  saveSettings();
+  chrome.runtime.sendMessage({ type: 'STOP_SOUND' });
+  syncMusicUI();
+}
+
+function syncMusicUI() {
+  document.querySelectorAll('.music-card').forEach(card => {
+    card.classList.toggle('active', card.dataset.sound === currentSound && isPlaying);
+  });
+
+  const container = document.getElementById('nowPlaying');
+  const nameEl = document.getElementById('nowPlayingName');
+  const statusEl = document.getElementById('nowPlayingStatus');
+  const btn = document.getElementById('playPauseBtn');
+  if (!container || !nameEl || !statusEl || !btn) return;
+
+  nameEl.textContent = (currentSound && SOUND_LABELS[currentSound]) || 'No sound selected';
+  statusEl.textContent = isPlaying ? 'NOW PLAYING' : 'PAUSED';
+  container.classList.toggle('paused', !isPlaying);
+  btn.textContent = isPlaying ? '⏸' : '▶';
+}
+
+// Stats 
+function initStats() {
+  updateStatsUI();
+  document.getElementById('resetStats').addEventListener('click', () => {
+    if (confirm('Reset all stats?')) {
+      settings.stats = { ...DEFAULT_SETTINGS.stats };
+      saveSettings();
+      updateStatsUI();
+    }
+  });
+}
+
+function updateStatsUI() {
+  const s = settings.stats || {};
+  document.getElementById('statFocus').textContent = s.pomodoros || 0;
+  document.getElementById('statMinutes').textContent = s.minutesToday || 0;
+  document.getElementById('statStreak').textContent = s.streak || 0;
+  const weekly = s.weekSessions || 0;
+  const pct = Math.min(100, Math.round((weekly / 25) * 100));
+  document.getElementById('weeklyPct').textContent = pct + '%';
+  document.getElementById('weeklyBar').style.width = pct + '%';
+  document.getElementById('weeklyDetail').textContent = `${weekly} / 25 sessions this week`;
+  const blocks = s.blocksToday || 0;
+  document.getElementById('blockedStats').textContent =
+    blocks > 0 ? `🚫 ${blocks} distractions blocked today` : 'No blocks recorded yet.';
 }

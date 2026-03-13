@@ -1,49 +1,97 @@
-// background service worker
-// does the site blocking , dark mode
+// StudyMode - Background Service Worker
+// Manages site blocking, dark mode injection, and offscreen audio document.
 
 const SOCIAL_SITES = ['instagram.com', 'tiktok.com', 'twitter.com', 'x.com', 'reddit.com', 'facebook.com', 'snapchat.com', 'pinterest.com'];
 const GAMING_SITES = ['twitch.tv', 'netflix.com', 'hulu.com', 'discord.com'];
+const AI_SITES = ['chatgpt.com', 'claude.ai', 'gemini.google.com', 'copilot.microsoft.com']
 
 let settings = null;
 
-// startup
-
-// messages
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-    switch (msg.type){
-        case 'SETTINGS_UPDATED':
-          settings = msg.settings;
-          applyAllRules();
-          updateContentScripts();
-          break;
-
-        case 'APPLY_RULES':
-          settings = msg.settings;
-          applyAllRules();
-          break;
-
-        case 'GET_SETTINGS':
-          sendResponse(settings || getDefaults());
-          break;
-
-        case 'SITE_BLOCKED':
-          incrementBlockCount();
-          break;
-
-        case 'TIMER_START':
-            startTimerAlarm(msg.totalSeconds);
-            break;
-
-        case 'TIMER_PAUSE':
-        case 'TIMER_RESET':
-            clearTimerAlarm();
-            break;
-    }
-
-    return true;
+// ── Startup ───────────────────────────────────────────────
+chrome.storage.local.get('studymodeSettings', (data) => {
+  settings = data.studymodeSettings || getDefaults();
+  applyAllRules();
+  restoreAudioIfNeeded();
 });
 
-// Offscreen document 
+// ── Messages ──────────────────────────────────────────────
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  switch (msg.type) {
+    case 'SETTINGS_UPDATED':
+      settings = msg.settings;
+      applyAllRules();
+      updateContentScripts();
+      break;
+
+    case 'APPLY_RULES':
+      settings = msg.settings;
+      applyAllRules();
+      break;
+
+    case 'GET_SETTINGS':
+      sendResponse(settings || getDefaults());
+      break;
+
+    case 'SITE_BLOCKED':
+      incrementBlockCount();
+      break;
+
+    case 'PLAY_SOUND':
+      ensureOffscreen().then(() => {
+        chrome.runtime.sendMessage({
+          target: 'offscreen',
+          action: 'play',
+          sound: msg.sound,
+          volume: msg.volume
+        }).catch(() => {});
+      });
+      break;
+
+    case 'STOP_SOUND':
+      ensureOffscreen().then(() => {
+        chrome.runtime.sendMessage({ target: 'offscreen', action: 'stop' }).catch(() => {});
+      });
+      break;
+
+    case 'SET_VOLUME':
+      ensureOffscreen().then(() => {
+        chrome.runtime.sendMessage({ target: 'offscreen', action: 'volume', volume: msg.volume }).catch(() => {});
+      });
+      break;
+
+    case 'GET_AUDIO_STATE':
+      ensureOffscreen().then(() => {
+        chrome.runtime.sendMessage({ target: 'offscreen', action: 'ping' }).catch(() => {});
+      });
+      break;
+
+    case 'AUDIO_STATE':
+      // Forward from offscreen back to popup
+      chrome.runtime.sendMessage({
+        type: 'AUDIO_STATE_UPDATE',
+        isPlaying: msg.isPlaying,
+        currentSound: msg.currentSound
+      }).catch(() => {});
+      break;
+
+    case 'TIMER_START':
+      startTimerAlarm(msg.totalSeconds);
+      break;
+
+    case 'TIMER_PAUSE':
+    case 'TIMER_RESET':
+      clearTimerAlarm();
+      break;
+
+
+    case 'OPEN_LOFI':
+      chrome.tabs.create({ url: 'https://www.youtube.com/watch?v=jfKfPfyJRdk', active: false });
+      break;
+  }
+  return true;
+});
+
+// ── Offscreen document ────────────────────────────────────
 let offscreenCreating = null;
 
 async function ensureOffscreen() {
@@ -59,7 +107,21 @@ async function ensureOffscreen() {
   offscreenCreating = null;
 }
 
-// Timer alarm 
+async function restoreAudioIfNeeded() {
+  if (!settings || !settings.audioPlaying || !settings.selectedSound) return;
+  await ensureOffscreen();
+  // Small delay to let offscreen doc initialise
+  setTimeout(() => {
+    chrome.runtime.sendMessage({
+      target: 'offscreen',
+      action: 'play',
+      sound: settings.selectedSound,
+      volume: (settings.volume || 50) / 100
+    }).catch(() => {});
+  }, 300);
+}
+
+// ── Timer alarm ───────────────────────────────────────────
 // The alarm fires when the timer reaches zero, even if the popup is closed.
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name !== 'studymode-timer') return;
@@ -127,7 +189,7 @@ async function clearTimerAlarm() {
   await chrome.alarms.clear('studymode-timer');
 }
 
-// site blocking
+// ── Navigation / site blocking ────────────────────────────
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (!settings || !settings.studyModeOn) return;
   if (changeInfo.status !== 'loading') return;
@@ -159,7 +221,7 @@ function getBlockedSites() {
   return sites;
 }
 
-// ad blocking rules
+// ── Ad block rules ────────────────────────────────────────
 function applyAllRules() {
   if (!settings) return;
   chrome.declarativeNetRequest.updateEnabledRulesets({
@@ -167,4 +229,112 @@ function applyAllRules() {
     disableRulesetIds: settings.adBlock ? [] : ['ad_block_rules']
   }).catch(() => {});
   updateContentScripts();
+}
+
+// ── Dark mode / YT injection ──────────────────────────────
+function updateContentScripts() {
+  if (!settings) return;
+  chrome.tabs.query({}, (tabs) => {
+    tabs.forEach(tab => {
+      if (!tab.id || !tab.url) return;
+      if (tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://')) return;
+      chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: applySettingsInPage,
+        args: [settings]
+      }).catch(() => {});
+    });
+  });
+}
+
+function applySettingsInPage(s) {
+  const DARK_ID = 'studymode-dark';
+  const YT_ID = 'studymode-yt';
+
+  let darkEl = document.getElementById(DARK_ID);
+  if (s.studyModeOn && s.darkMode) {
+    if (!darkEl) {
+      darkEl = document.createElement('style');
+      darkEl.id = DARK_ID;
+      document.head.appendChild(darkEl);
+    }
+    // Check if the page is already dark before applying invert
+    setTimeout(() => {
+      const bg = window.getComputedStyle(document.documentElement).backgroundColor;
+      const m = bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+      const isDark = m ? (0.2126 * parseInt(m[1]) + 0.7152 * parseInt(m[2]) + 0.0722 * parseInt(m[3])) < 100 : false;
+      const el = document.getElementById(DARK_ID);
+      if (!isDark) {
+        if (!el) return;
+        el.textContent = `
+          html { filter: invert(1) hue-rotate(180deg) !important; }
+          img, video, canvas, iframe, picture,
+          [style*="background-image"] { filter: invert(1) hue-rotate(180deg) !important; }
+        `;
+      } else {
+        if (el) el.remove();
+      }
+    }, 150);
+  } else {
+    if (darkEl) darkEl.remove();
+  }
+
+  const isYT = window.location.hostname.includes('youtube.com');
+  let ytEl = document.getElementById(YT_ID);
+  if (s.studyModeOn && s.blockYouTube && isYT) {
+    if (!ytEl) {
+      ytEl = document.createElement('style');
+      ytEl.id = YT_ID;
+      document.head.appendChild(ytEl);
+    }
+    ytEl.textContent = `
+      ytd-reel-shelf-renderer,
+      ytd-rich-shelf-renderer[is-shorts],
+      a[href*="/shorts"],
+      [aria-label*="Shorts"],
+      #shorts-container,
+      ytd-guide-entry-renderer a[href="/shorts"] { display: none !important; }
+      ytd-browse[page-subtype="home"] ytd-rich-grid-renderer,
+      #secondary ytd-watch-next-secondary-results-renderer,
+      ytd-compact-video-renderer,
+      #related { display: none !important; }
+      ytd-comments, #comments { display: none !important; }
+      .ytp-endscreen-content, .ytp-ce-element, .ytp-cards-teaser { display: none !important; }
+      ytd-notification-topbar-button-renderer { display: none !important; }
+      #masthead-ad { display: none !important; }
+    `;
+  } else {
+    if (ytEl) ytEl.remove();
+  }
+}
+
+async function incrementBlockCount() {
+  const data = await chrome.storage.local.get('studymodeSettings');
+  const s = data.studymodeSettings;
+  if (!s) return;
+  s.stats = s.stats || {};
+  s.stats.blocksToday = (s.stats.blocksToday || 0) + 1;
+  await chrome.storage.local.set({ studymodeSettings: s });
+}
+
+function getDefaults() {
+  return {
+    studyModeOn: false,
+    blockSocial: true,
+    blockYouTube: true,
+    blockGaming: false,
+    darkMode: true,
+    adBlock: true,
+    customSites: [],
+    timerMinutes: 25,
+    timerMode: 'pomodoro',
+    volume: 50,
+    selectedSound: null,
+    audioPlaying: false,
+    timerState: { running: false, endTime: null, totalSeconds: 1500 },
+    stats: {
+      pomodoros: 0, minutesToday: 0, streak: 0,
+      lastDate: null, weekSessions: 0, weekStart: null, blocksToday: 0
+    }
+  };
 }
