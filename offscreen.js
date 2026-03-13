@@ -1,5 +1,4 @@
 // StudyMode Offscreen Audio Engine
-// Focus: Social Cafe, High-Density Forest, & Physics-Based Fireplace
 
 let audioCtx = null;
 let gainNode = null;
