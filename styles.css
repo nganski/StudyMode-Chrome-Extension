@@ -628,7 +628,7 @@ body{
 
 .session-dot.done {
     background: var(--accent);
-    box-shadow: 0 0 6px rgba(127,255,178,0.6);
+    box-shadow: 0 0 6px rgba(255, 200, 127, 0.6);
 }
 
 /* music tab */

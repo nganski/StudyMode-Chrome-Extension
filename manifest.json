@@ -6,11 +6,8 @@
   "permissions": [
     "storage",
     "tabs",
-    "scripting",
     "declarativeNetRequest",
-    "declarativeNetRequestWithHostAccess",
     "alarms",
-    "notifications",
     "offscreen"
   ],
   "host_permissions": [

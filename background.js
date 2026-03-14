@@ -19,7 +19,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     case 'SETTINGS_UPDATED':
       settings = msg.settings;
       applyAllRules();
-      updateContentScripts();
       break;
 
     case 'APPLY_RULES':
@@ -159,17 +158,6 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 
   await chrome.storage.local.set({ studymodeSettings: s });
 
-  // Fire notification
-  chrome.notifications.create('timer-done', {
-    type: 'basic',
-    iconUrl: 'images/icon48.png',
-    title: '⏰ StudyMode — Session Complete!',
-    message: s.timerMode === 'pomodoro'
-      ? `Great work! Pomodoro #${s.stats.pomodoros} done. Take a short break.`
-      : 'Break over — time to get back to studying!',
-    priority: 2
-  });
-
   // Play completion chime via offscreen audio engine
   ensureOffscreen().then(() => {
     chrome.runtime.sendMessage({
@@ -234,84 +222,6 @@ function applyAllRules() {
     enableRulesetIds: settings.adBlock ? ['ad_block_rules'] : [],
     disableRulesetIds: settings.adBlock ? [] : ['ad_block_rules']
   }).catch(() => {});
-  updateContentScripts();
-}
-
-// Dark mode / YT injection 
-function updateContentScripts() {
-  if (!settings) return;
-  chrome.tabs.query({}, (tabs) => {
-    tabs.forEach(tab => {
-      if (!tab.id || !tab.url) return;
-      if (tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://')) return;
-      chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: applySettingsInPage,
-        args: [settings]
-      }).catch(() => {});
-    });
-  });
-}
-
-function applySettingsInPage(s) {
-  const DARK_ID = 'studymode-dark';
-  const YT_ID = 'studymode-yt';
-
-  let darkEl = document.getElementById(DARK_ID);
-  if (s.studyModeOn && s.darkMode) {
-    if (!darkEl) {
-      darkEl = document.createElement('style');
-      darkEl.id = DARK_ID;
-      document.head.appendChild(darkEl);
-    }
-    // Check if the page is already dark before applying invert
-    setTimeout(() => {
-      const bg = window.getComputedStyle(document.documentElement).backgroundColor;
-      const m = bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-      const isDark = m ? (0.2126 * parseInt(m[1]) + 0.7152 * parseInt(m[2]) + 0.0722 * parseInt(m[3])) < 100 : false;
-      const el = document.getElementById(DARK_ID);
-      if (!isDark) {
-        if (!el) return;
-        el.textContent = `
-          html { filter: invert(1) hue-rotate(180deg) !important; }
-          img, video, canvas, iframe, picture,
-          [style*="background-image"] { filter: invert(1) hue-rotate(180deg) !important; }
-        `;
-      } else {
-        if (el) el.remove();
-      }
-    }, 150);
-  } else {
-    if (darkEl) darkEl.remove();
-  }
-
-  const isYT = window.location.hostname.includes('youtube.com');
-  let ytEl = document.getElementById(YT_ID);
-  if (s.studyModeOn && s.blockYouTube && isYT) {
-    if (!ytEl) {
-      ytEl = document.createElement('style');
-      ytEl.id = YT_ID;
-      document.head.appendChild(ytEl);
-    }
-    ytEl.textContent = `
-      ytd-reel-shelf-renderer,
-      ytd-rich-shelf-renderer[is-shorts],
-      a[href*="/shorts"],
-      [aria-label*="Shorts"],
-      #shorts-container,
-      ytd-guide-entry-renderer a[href="/shorts"] { display: none !important; }
-      ytd-browse[page-subtype="home"] ytd-rich-grid-renderer,
-      #secondary ytd-watch-next-secondary-results-renderer,
-      ytd-compact-video-renderer,
-      #related { display: none !important; }
-      ytd-comments, #comments { display: none !important; }
-      .ytp-endscreen-content, .ytp-ce-element, .ytp-cards-teaser { display: none !important; }
-      ytd-notification-topbar-button-renderer { display: none !important; }
-      #masthead-ad { display: none !important; }
-    `;
-  } else {
-    if (ytEl) ytEl.remove();
-  }
 }
 
 async function incrementBlockCount() {
