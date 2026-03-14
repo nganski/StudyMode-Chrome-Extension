@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "StudyMode — Focus Extension",
+  "name": "StudyMode",
   "version": "1.0.0",
-  "description": "Block distractions, enable dark mode, run a study timer, play focus music, and block ads — built for students.",
+  "description": "The all-in-one focus tool for students. Block AI and social sites, track study streaks, and reclaim your time with YouTube Zen mode.",
   "permissions": [
     "storage",
     "tabs",
