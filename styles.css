@@ -489,7 +489,7 @@ body{
     stroke-width: 5;
     stroke-linecap: round;
     transition: stroke-dashoffset 0.6s linear;
-    filter: drop-shadow(0 0 4px rgba(127, 255, 178, 0.6));
+    filter: drop-shadow(0 0 4px rgba(165, 107, 19, 0.6));
 }
 
 .timer-inner {
@@ -821,10 +821,10 @@ body{
 }
 
 /* Color accents per feature */
-.ic-block { background: rgba(255, 94, 109, 0.15); }
-.ic-dark { background: rgba(91, 200, 245, 0.12); }
-.ic-ads { background: rgba(127, 255, 178, 0.12); }
-.ic-timer { background: rgba(255, 199, 0, 0.12); }
+/* .ic-block { background: rgba(136, 148, 138, 0.15); } */
+/* .ic-dark { background: rgba(91, 200, 245, 0.12); } */
+/* .ic-ads { background: rgba(191, 245, 198, 0.12); } */
+
 
 
 /* Footer */
