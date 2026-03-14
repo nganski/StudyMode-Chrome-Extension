@@ -29,6 +29,18 @@ A feature-rich focus extension built for students.
 - The Pomodoro timer sends a browser notification when your session ends
 - Click a sound again to stop it; adjust volume with the slider
 
+## Extension Demo 
+<details>
+<summary>Click to view screenshots</summary>
+
+![focus page](assets/sm_1.png)
+![no more youtube rabbit hole](assets/sm_2.jpeg)
+![enter your flowstate](assets/sm_3.jpeg)
+![stats](assets/sm_4.jpeg)
+![blocked pages](assets/sm_5.jpeg)
+
+</details>
+
 ## File Structure
 
 ```
